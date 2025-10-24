@@ -1,0 +1,455 @@
+{
+  "system": {
+    "name": "IT Support Report Management System",
+    "version": "1.0.0",
+    "description": "A comprehensive IT support report management system with AI-powered recommendations, chat assistance, and multi-format export capabilities",
+    "techStack": {
+      "frontend": "React 19 with Vite",
+      "database": "Supabase PostgreSQL",
+      "ai": "Cerebras AI (GPT-OSS-120B model)",
+      "search": "Tavily API for web search",
+      "styling": "Tailwind CSS with dark mode",
+      "routing": "React Router v6",
+      "stateManagement": "React Context API (ThemeContext, AuthContext, ReportContext, ChatContext)"
+    }
+  },
+  "features": {
+    "authentication": {
+      "description": "Secure authentication system with persistent sessions",
+      "provider": "Supabase Auth",
+      "methods": ["Email/Password"],
+      "features": [
+        "Sign up with email verification",
+        "Sign in with email and password",
+        "Password reset functionality",
+        "Session persistence across page refreshes",
+        "Protected routes requiring authentication",
+        "User profile display in sidebar",
+        "Sign out with loading state"
+      ],
+      "implementation": {
+        "authService": "src/services/auth/authService.js",
+        "authContext": "src/context/AuthContext.jsx",
+        "protectedRoute": "src/components/auth/ProtectedRoute.jsx",
+        "loginPage": "src/pages/Login.jsx"
+      }
+    },
+    "reportManagement": {
+      "description": "Complete report lifecycle management with draft support",
+      "capabilities": [
+        "Create reports via 4-step wizard",
+        "Save drafts at any step",
+        "Continue editing drafts from saved position",
+        "Duplicate reports as templates",
+        "Edit existing reports",
+        "Delete reports",
+        "View full report details",
+        "Export to PDF and DOCX formats",
+        "Search and filter reports",
+        "Pagination support"
+      ],
+      "reportStructure": {
+        "title": "String - Report title",
+        "machineDetails": {
+          "make": "String - Machine manufacturer",
+          "model": "String - Machine model",
+          "serialNumber": "String - Serial number",
+          "ram": "String - RAM specification",
+          "storage": "String - Storage specification",
+          "processor": "String - Processor specification"
+        },
+        "userComplaint": "String - User's reported issue",
+        "findings": "Array[String] - Technical findings",
+        "recommendations": "Array[String] - AI-generated or manual recommendations",
+        "preparedBy": "String - Report author",
+        "reviewedBy": "String - Report reviewer",
+        "isDraft": "Boolean - Draft status",
+        "draftStep": "Number - Last completed step (0-3)"
+      },
+      "workflow": [
+        {
+          "step": 1,
+          "name": "Details",
+          "component": "ReportDetailsForm",
+          "fields": ["title", "machineDetails", "userComplaint"]
+        },
+        {
+          "step": 2,
+          "name": "Findings",
+          "component": "FindingsForm",
+          "fields": ["findings[]"]
+        },
+        {
+          "step": 3,
+          "name": "Recommendations",
+          "component": "AIRecommendationsStep",
+          "fields": ["recommendations[]"],
+          "aiFeatures": ["Generate AI recommendations", "Web search for solutions"]
+        },
+        {
+          "step": 4,
+          "name": "Review",
+          "component": "ReportPreview",
+          "actions": ["Preview", "Export", "Submit"]
+        }
+      ]
+    },
+    "aiFeatures": {
+      "description": "AI-powered assistance using Cerebras AI",
+      "capabilities": [
+        "Generate repair recommendations based on findings",
+        "Web search for technical solutions",
+        "Chat interface for technical assistance",
+        "Context-aware responses",
+        "Function calling for web search"
+      ],
+      "aiProvider": {
+        "name": "Cerebras",
+        "model": "gpt-oss-120b",
+        "endpoint": "https://api.cerebras.ai/v1/chat/completions",
+        "features": ["Streaming responses", "Function calling", "System prompts"]
+      },
+      "searchProvider": {
+        "name": "Tavily",
+        "endpoint": "https://api.tavily.com/search",
+        "features": ["Web search", "Technical documentation search", "Result summarization"]
+      },
+      "implementation": {
+        "service": "src/services/ai/cerebrasService.js",
+        "searchService": "src/services/ai/tavilyService.js",
+        "chatContext": "src/contexts/ChatContext.jsx"
+      }
+    },
+    "chatSystem": {
+      "description": "AI chat interface for technical assistance",
+      "features": [
+        "Start new conversations",
+        "View chat history",
+        "Continue previous conversations",
+        "Markdown-formatted responses",
+        "Copy messages to clipboard",
+        "Delete conversations",
+        "Streaming responses",
+        "Context retention"
+      ],
+      "storage": "Supabase chats table",
+      "implementation": {
+        "chatPage": "src/pages/ChatPage.jsx",
+        "chatInterface": "src/components/chat/ChatInterface.jsx",
+        "chatHistory": "src/components/chat/ChatHistory.jsx",
+        "chatContext": "src/contexts/ChatContext.jsx"
+      }
+    },
+    "exportSystem": {
+      "description": "Multi-format export capabilities",
+      "formats": [
+        {
+          "format": "PDF",
+          "library": "jsPDF",
+          "features": [
+            "Professional formatting",
+            "Headers and footers",
+            "Proper spacing",
+            "Dark text on white background",
+            "Bullet points",
+            "Logo/branding support"
+          ],
+          "service": "src/services/export/pdfExport.js"
+        },
+        {
+          "format": "DOCX",
+          "library": "docx",
+          "features": [
+            "Proper bullet formatting",
+            "Readable font sizes (16pt title, 14pt headers, 11pt body)",
+            "Section headers",
+            "Structured content",
+            "Table support"
+          ],
+          "service": "src/services/export/docxExport.js"
+        }
+      ]
+    },
+    "dashboard": {
+      "description": "Overview of system statistics and recent activity",
+      "widgets": [
+        {
+          "name": "Statistics Overview",
+          "metrics": [
+            "Total reports",
+            "Reports today",
+            "Reports this week",
+            "Reports this month"
+          ]
+        },
+        {
+          "name": "Recent Reports",
+          "features": ["Last 5 reports", "Quick actions", "Status badges"]
+        },
+        {
+          "name": "Quick Actions",
+          "actions": ["Create New Report", "View All Reports", "Start AI Chat"]
+        }
+      ]
+    }
+  },
+  "database": {
+    "provider": "Supabase PostgreSQL",
+    "tables": {
+      "reports": {
+        "description": "Stores all IT support reports",
+        "schema": {
+          "id": "UUID (Primary Key)",
+          "title": "TEXT",
+          "machine_make": "TEXT",
+          "machine_model": "TEXT",
+          "serial_number": "TEXT",
+          "ram": "TEXT",
+          "storage": "TEXT",
+          "processor": "TEXT",
+          "user_complaint": "TEXT",
+          "findings": "JSONB (Array)",
+          "recommendations": "JSONB (Array)",
+          "report_content": "TEXT (Markdown formatted)",
+          "prepared_by": "TEXT",
+          "reviewed_by": "TEXT",
+          "is_draft": "BOOLEAN",
+          "draft_step": "INTEGER",
+          "created_at": "TIMESTAMP WITH TIME ZONE",
+          "updated_at": "TIMESTAMP WITH TIME ZONE"
+        },
+        "indexes": ["id", "created_at", "is_draft"],
+        "service": "src/services/database/reportService.js"
+      },
+      "chats": {
+        "description": "Stores AI chat conversations",
+        "schema": {
+          "id": "UUID (Primary Key)",
+          "title": "TEXT",
+          "messages": "JSONB (Array of message objects)",
+          "created_at": "TIMESTAMP WITH TIME ZONE",
+          "updated_at": "TIMESTAMP WITH TIME ZONE"
+        },
+        "service": "src/services/database/chatService.js"
+      },
+      "auth.users": {
+        "description": "Supabase managed authentication users",
+        "schema": {
+          "id": "UUID",
+          "email": "TEXT",
+          "encrypted_password": "TEXT",
+          "email_confirmed_at": "TIMESTAMP",
+          "user_metadata": "JSONB",
+          "created_at": "TIMESTAMP",
+          "updated_at": "TIMESTAMP"
+        }
+      }
+    }
+  },
+  "architecture": {
+    "layers": {
+      "presentation": {
+        "description": "UI components and pages",
+        "components": [
+          "Pages: Dashboard, CreateReport, ReportsList, ChatPage, Login, HelpPage",
+          "Forms: ReportDetailsForm, FindingsForm, EditReportForm",
+          "UI Components: Button, Input, Card, Badge, Modal, LoadingSpinner",
+          "Layout: Sidebar, Header, Layout",
+          "Report Components: ReportProgress, ReportPreview, ReportCard, AIRecommendationsStep"
+        ]
+      },
+      "business": {
+        "description": "Services and business logic",
+        "services": [
+          "reportService: CRUD operations for reports",
+          "chatService: Chat management",
+          "authService: Authentication operations",
+          "cerebrasService: AI completions",
+          "tavilyService: Web search",
+          "pdfExport: PDF generation",
+          "docxExport: DOCX generation"
+        ]
+      },
+      "data": {
+        "description": "Database and state management",
+        "components": [
+          "Supabase client: Database connection",
+          "React Context: Global state (Theme, Auth, Report, Chat)",
+          "Custom Hooks: useReportActions, useAuth"
+        ]
+      }
+    },
+    "stateManagement": {
+      "contexts": [
+        {
+          "name": "ThemeContext",
+          "purpose": "Dark/light theme management",
+          "file": "src/contexts/ThemeContext.jsx"
+        },
+        {
+          "name": "AuthContext",
+          "purpose": "User authentication state",
+          "file": "src/context/AuthContext.jsx",
+          "provides": ["user", "session", "signIn", "signUp", "signOut", "loading"]
+        },
+        {
+          "name": "ReportContext",
+          "purpose": "Report editing state (if used)",
+          "file": "src/contexts/ReportContext.jsx"
+        },
+        {
+          "name": "ChatContext",
+          "purpose": "Chat session management",
+          "file": "src/contexts/ChatContext.jsx"
+        }
+      ]
+    }
+  },
+  "routing": {
+    "publicRoutes": [
+      {
+        "path": "/login",
+        "component": "Login",
+        "description": "Authentication page for sign in and sign up"
+      }
+    ],
+    "protectedRoutes": [
+      {
+        "path": "/",
+        "component": "Dashboard",
+        "description": "Main dashboard with statistics"
+      },
+      {
+        "path": "/create-report",
+        "component": "CreateReport",
+        "description": "4-step report creation wizard"
+      },
+      {
+        "path": "/reports",
+        "component": "ReportsList",
+        "description": "List all reports with search and pagination"
+      },
+      {
+        "path": "/reports/:id/edit",
+        "component": "EditReportForm",
+        "description": "Edit existing report"
+      },
+      {
+        "path": "/reports/:id",
+        "component": "ViewReportModal",
+        "description": "View full report details"
+      },
+      {
+        "path": "/chat",
+        "component": "ChatPage",
+        "description": "Start new AI chat"
+      },
+      {
+        "path": "/chat/history",
+        "component": "ChatPage (history view)",
+        "description": "View all chat conversations"
+      },
+      {
+        "path": "/chat/continue/:chatId",
+        "component": "ChatPage (continue chat)",
+        "description": "Continue existing conversation"
+      },
+      {
+        "path": "/help",
+        "component": "HelpPage",
+        "description": "Help documentation and user guide"
+      }
+    ]
+  },
+  "environment": {
+    "requiredVariables": {
+      "VITE_SUPABASE_URL": "Supabase project URL",
+      "VITE_SUPABASE_ANON_KEY": "Supabase anonymous key",
+      "VITE_CEREBRAS_API_KEY": "Cerebras AI API key",
+      "VITE_TAVILY_API_KEY": "Tavily search API key"
+    }
+  },
+  "userGuide": {
+    "gettingStarted": {
+      "steps": [
+        "Navigate to the login page",
+        "Sign up with email and password or sign in if you have an account",
+        "After login, you'll be redirected to the dashboard",
+        "View statistics and recent reports on the dashboard"
+      ]
+    },
+    "creatingReports": {
+      "steps": [
+        "Click 'Create Report' from sidebar or dashboard",
+        "Step 1: Enter machine details and user complaint",
+        "Step 2: Add technical findings (minimum 1 required)",
+        "Step 3: Generate AI recommendations or add manually",
+        "Step 4: Review and export (PDF/DOCX) or submit",
+        "You can save as draft at any step and continue later"
+      ]
+    },
+    "managingDrafts": {
+      "features": [
+        "Drafts are marked with a blue 'Draft' badge",
+        "Click 'Continue Editing' to resume from where you left off",
+        "System remembers which step you were on",
+        "Updating a draft doesn't create duplicates"
+      ]
+    },
+    "usingAIChat": {
+      "steps": [
+        "Click 'New Chat' from sidebar",
+        "Ask technical questions about IT issues",
+        "AI can search the web for current information",
+        "Chat history is saved automatically",
+        "Access past conversations via 'Chat History'"
+      ]
+    },
+    "exportingReports": {
+      "formats": [
+        "PDF: Best for sharing and printing",
+        "DOCX: Best for further editing in Word"
+      ],
+      "steps": [
+        "Open any report or create new one",
+        "Navigate to Review step",
+        "Click 'Export as PDF' or 'Export as DOCX'",
+        "File downloads automatically"
+      ]
+    }
+  },
+  "commonIssues": {
+    "authentication": [
+      {
+        "issue": "Can't sign in",
+        "solution": "Check email/password, ensure email is verified"
+      },
+      {
+        "issue": "Session expires",
+        "solution": "Sessions persist for 1 hour by default, sign in again"
+      }
+    ],
+    "reports": [
+      {
+        "issue": "Draft not saving",
+        "solution": "Check internet connection, ensure all required fields are filled"
+      },
+      {
+        "issue": "Can't generate AI recommendations",
+        "solution": "Ensure you've added findings first, check API key configuration"
+      }
+    ]
+  },
+  "apiIntegration": {
+    "cerebrasAI": {
+      "usage": "AI-powered recommendations and chat",
+      "rateLimit": "Check Cerebras documentation",
+      "cost": "Pay per token"
+    },
+    "tavilySearch": {
+      "usage": "Web search for technical solutions",
+      "rateLimit": "Check Tavily documentation",
+      "cost": "Free tier available"
+    }
+  }
+}
