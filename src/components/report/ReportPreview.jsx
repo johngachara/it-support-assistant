@@ -70,84 +70,85 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6 w-full overflow-hidden">
             <Card>
-                <div className="space-y-6">
-                    <div className="flex items-center justify-between">
+                <div className="space-y-4 sm:space-y-6">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                             Report Preview
                         </h3>
                         <Button
                             variant="outline"
                             onClick={() => setShowExportModal(true)}
+                            className="w-full sm:w-auto"
                         >
                             Export Report
                         </Button>
                     </div>
 
                     {/* Report Preview */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-6 shadow-sm">
-                        <div className="text-center border-b-2 border-gray-900 dark:border-gray-300 pb-4 mb-6">
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-4 sm:p-6 shadow-sm overflow-hidden">
+                        <div className="text-center border-b-2 border-gray-900 dark:border-gray-300 pb-3 sm:pb-4 mb-4 sm:mb-6">
+                            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white break-words">
                                 {reportData.title || 'IT Support Report'}
                             </h1>
-                            <p className="text-gray-600 dark:text-gray-400">Generated on {new Date().toLocaleDateString()}</p>
+                            <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Generated on {new Date().toLocaleDateString()}</p>
                         </div>
 
                         {/* Machine Details */}
-                        <div className="mb-6">
-                            <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-4">
+                        <div className="mb-4 sm:mb-6">
+                            <h2 className="text-base sm:text-lg md:text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-3 sm:mb-4">
                                 Machine Details
                             </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-gray-900 dark:text-white">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-sm sm:text-base text-gray-900 dark:text-white break-words">
                                     <span className="font-medium">Make & Model:</span> {reportData.machineDetails?.make} {reportData.machineDetails?.model}
                                 </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-gray-900 dark:text-white">
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-sm sm:text-base text-gray-900 dark:text-white break-words">
                                     <span className="font-medium">Serial Number:</span> {reportData.machineDetails?.serialNumber || 'N/A'}
                                 </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-gray-900 dark:text-white">
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-sm sm:text-base text-gray-900 dark:text-white">
                                     <span className="font-medium">RAM:</span> {reportData.machineDetails?.ram || 'N/A'}
                                 </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-gray-900 dark:text-white">
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-sm sm:text-base text-gray-900 dark:text-white">
                                     <span className="font-medium">Storage:</span> {reportData.machineDetails?.storage || 'N/A'}
                                 </div>
-                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded md:col-span-2 text-gray-900 dark:text-white">
+                                <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded text-sm sm:text-base sm:col-span-2 text-gray-900 dark:text-white break-words">
                                     <span className="font-medium">Processor:</span> {reportData.machineDetails?.processor || 'N/A'}
                                 </div>
                             </div>
                         </div>
 
                         {/* User Complaint */}
-                        <div className="mb-6">
-                            <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-4">
+                        <div className="mb-4 sm:mb-6">
+                            <h2 className="text-base sm:text-lg md:text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-3 sm:mb-4">
                                 User Complaint
                             </h2>
-                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 leading-relaxed break-words">
                                 {reportData.userComplaint || 'No complaint specified'}
                             </p>
                         </div>
 
                         {/* Findings */}
-                        <div className="mb-6">
-                            <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-4">
+                        <div className="mb-4 sm:mb-6">
+                            <h2 className="text-base sm:text-lg md:text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-3 sm:mb-4">
                                 Findings
                             </h2>
-                            <ol className="space-y-3">
+                            <ol className="space-y-2 sm:space-y-3">
                                 {reportData.findings?.map((finding, index) => (
-                                    <li key={index} className="bg-gray-50 dark:bg-gray-700 p-3 rounded border-l-4 border-blue-500 dark:border-blue-400 text-gray-900 dark:text-white">
+                                    <li key={index} className="bg-gray-50 dark:bg-gray-700 p-2.5 sm:p-3 rounded border-l-4 border-blue-500 dark:border-blue-400 text-sm sm:text-base text-gray-900 dark:text-white break-words">
                                         <span className="font-medium">{index + 1}.</span> {finding}
                                     </li>
-                                )) || <li className="text-gray-500 dark:text-gray-400">No findings specified</li>}
+                                )) || <li className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No findings specified</li>}
                             </ol>
                         </div>
 
                         {/* Recommendations */}
-                        <div className="mb-8">
-                            <h2 className="text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-4">
+                        <div className="mb-6 sm:mb-8">
+                            <h2 className="text-base sm:text-lg md:text-xl font-semibold text-blue-600 dark:text-blue-400 border-b border-gray-200 dark:border-gray-600 pb-2 mb-3 sm:mb-4">
                                 Recommendations
                             </h2>
-                            <ol className="space-y-3">
+                            <ol className="space-y-2 sm:space-y-3">
                                 {reportData.recommendations?.length > 0 ? (
                                     reportData.recommendations.map((rec, index) => (
                                         <li key={rec.id || index}>
@@ -155,16 +156,16 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
                                         </li>
                                     ))
                                 ) : (
-                                    <li className="text-gray-500 dark:text-gray-400">No recommendations generated</li>
+                                    <li className="text-sm sm:text-base text-gray-500 dark:text-gray-400">No recommendations generated</li>
                                 )}
                             </ol>
 
                         </div>
 
                         {/* Signature Section */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-gray-200 dark:border-gray-600">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 pt-4 sm:pt-6 border-t border-gray-200 dark:border-gray-600">
                             <div>
-                                <h4 className="font-medium mb-3 text-gray-900 dark:text-white">Report Prepared By</h4>
+                                <h4 className="text-sm sm:text-base font-medium mb-3 text-gray-900 dark:text-white">Report Prepared By</h4>
                                 <div className="space-y-2">
                                     <Input
                                         label="Name"
@@ -172,15 +173,15 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
                                         onChange={(e) => setPreparedBy(e.target.value)}
                                         placeholder="Enter preparer name"
                                     />
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                                        <p>Date: _________________________</p>
-                                        <p>Sign: _________________________</p>
+                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                        <p className="break-all">Date: _________________________</p>
+                                        <p className="break-all">Sign: _________________________</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div>
-                                <h4 className="font-medium mb-3 text-gray-900 dark:text-white">Reviewed By</h4>
+                                <h4 className="text-sm sm:text-base font-medium mb-3 text-gray-900 dark:text-white">Reviewed By</h4>
                                 <div className="space-y-2">
                                     <Input
                                         label="Name"
@@ -188,9 +189,9 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
                                         onChange={(e) => setReviewedBy(e.target.value)}
                                         placeholder="Enter reviewer name"
                                     />
-                                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                                        <p>Date: _________________________</p>
-                                        <p>Sign: _________________________</p>
+                                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                                        <p className="break-all">Date: _________________________</p>
+                                        <p className="break-all">Sign: _________________________</p>
                                     </div>
                                 </div>
                             </div>
@@ -199,18 +200,20 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
                 </div>
             </Card>
 
-            <div className="flex justify-between">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0">
                 <Button
                     variant="outline"
                     onClick={onBack}
+                    className="w-full sm:w-auto"
                 >
                     Back to Recommendations
                 </Button>
 
-                <div className="flex space-x-3">
+                <div className="flex flex-col sm:flex-row gap-3 sm:space-x-3">
                     <Button
                         variant="outline"
                         onClick={() => onSave({ preparedBy, reviewedBy })}
+                        className="w-full sm:w-auto"
                     >
                         Save Draft
                     </Button>
@@ -218,6 +221,7 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
                     <Button
                         onClick={handleSubmit}
                         loading={submitting}
+                        className="w-full sm:w-auto"
                     >
                         Create Report
                     </Button>
@@ -267,16 +271,18 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
                         required
                     />
 
-                    <div className="flex justify-end space-x-3 pt-4">
+                    <div className="flex flex-col sm:flex-row justify-end gap-3 sm:space-x-3 pt-4">
                         <Button
                             variant="outline"
                             onClick={() => setShowExportModal(false)}
+                            className="w-full sm:w-auto order-2 sm:order-1"
                         >
                             Cancel
                         </Button>
                         <Button
                             onClick={handleExport}
                             loading={exporting}
+                            className="w-full sm:w-auto order-1 sm:order-2"
                         >
                             Export {exportFormat.toUpperCase()}
                         </Button>

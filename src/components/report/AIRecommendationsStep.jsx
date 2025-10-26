@@ -275,8 +275,8 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
         <div className="space-y-6">
             <Card>
                 <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                        <div>
+                    <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+                        <div className="flex-1">
                             <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                                 Expert IT Recommendations
                             </h3>
@@ -284,7 +284,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                 AI-generated recommendations based on technical analysis.
                             </p>
                             {metadata && (
-                                <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     <span>Total: {metadata.total_recommendations}</span>
                                     {metadata.search_enhanced && <span className="flex items-center"><span className="w-2 h-2 bg-green-400 rounded-full mr-1"></span>Web-enhanced</span>}
                                     {Object.entries(metadata.priority_breakdown).map(([priority, count]) =>
@@ -294,17 +294,19 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                             )}
                         </div>
 
-                        <div className="flex space-x-2">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={addCustomRecommendation}
                                 title="Add custom recommendation"
+                                className="w-full sm:w-auto"
                             >
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                 </svg>
-                                Add Custom
+                                <span className="hidden sm:inline">Add Custom</span>
+                                <span className="sm:hidden">Add Custom Recommendation</span>
                             </Button>
 
                             <Button
@@ -313,11 +315,13 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                 onClick={regenerateRecommendations}
                                 loading={generating}
                                 title="Regenerate all recommendations"
+                                className="w-full sm:w-auto"
                             >
-                                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="w-4 h-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                 </svg>
-                                Regenerate
+                                <span className="hidden sm:inline">Regenerate</span>
+                                <span className="sm:hidden">Regenerate All</span>
                             </Button>
                         </div>
                     </div>
@@ -346,14 +350,14 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                                 Generate AI-powered recommendations based on your findings, or add custom ones.
                             </p>
-                            <div className="flex justify-center space-x-3">
-                                <Button onClick={generateRecommendations}>
+                            <div className="flex flex-col sm:flex-row justify-center gap-3">
+                                <Button onClick={generateRecommendations} className="w-full sm:w-auto">
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                     </svg>
                                     Generate AI Recommendations
                                 </Button>
-                                <Button variant="outline" onClick={addCustomRecommendation}>
+                                <Button variant="outline" onClick={addCustomRecommendation} className="w-full sm:w-auto">
                                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                     </svg>
@@ -370,38 +374,38 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                 return (
                                     <div key={recommendation.id || index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                                         {/* Header */}
-                                        <div className="p-4 bg-gray-50 dark:bg-gray-800/50">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center space-x-3 flex-1">
-                                                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full">
+                                        <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50">
+                                            <div className="flex items-start sm:items-center justify-between gap-3">
+                                                <div className="flex items-start sm:items-center space-x-3 flex-1 min-w-0">
+                                                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full mt-1 sm:mt-0">
                                                         {getCategoryIcon(recommendation.category)}
                                                     </div>
 
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center space-x-2 mb-1">
-                                                            <h4 className="text-lg font-medium text-gray-900 dark:text-white truncate">
+                                                        <div className="flex items-start sm:items-center space-x-2 mb-1">
+                                                            <h4 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white break-words">
                                                                 {recommendation.title || `Recommendation ${index + 1}`}
                                                             </h4>
                                                         </div>
-                                                        <div className="flex items-center space-x-2 text-sm">
+                                                        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(recommendation.priority)}`}>
                                                                 {recommendation.priority}
                                                             </span>
-                                                            <span className="text-gray-500 dark:text-gray-400">
+                                                            <span className="text-gray-500 dark:text-gray-400 hidden sm:inline">
                                                                 {recommendation.category}
                                                             </span>
-                                                            <span className="text-gray-500 dark:text-gray-400">•</span>
-                                                            <span className="text-gray-500 dark:text-gray-400">
+                                                            <span className="text-gray-500 dark:text-gray-400 hidden sm:inline">•</span>
+                                                            <span className="text-gray-500 dark:text-gray-400 text-xs break-words">
                                                                 {recommendation.urgency}
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div className="flex items-center space-x-1">
+                                                <div className="flex items-center gap-1 flex-shrink-0">
                                                     <button
                                                         onClick={() => toggleExpanded(index)}
-                                                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        className="p-1.5 sm:p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                                                         title={isExpanded ? 'Collapse' : 'Expand'}
                                                     >
                                                         <svg className={`w-4 h-4 transform ${isExpanded ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -413,7 +417,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                         <>
                                                             <button
                                                                 onClick={() => startEditing(index)}
-                                                                className="p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                className="p-1.5 sm:p-2 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                                                                 title="Edit recommendation"
                                                             >
                                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -423,7 +427,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
 
                                                             <button
                                                                 onClick={() => removeRecommendation(index)}
-                                                                className="p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                                className="p-1.5 sm:p-2 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
                                                                 title="Remove recommendation"
                                                             >
                                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -438,11 +442,11 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
 
                                         {/* Expanded Content */}
                                         {isExpanded && (
-                                            <div className="p-4">
+                                            <div className="p-3 sm:p-4">
                                                 {isEditing ? (
                                                     <div className="space-y-4">
                                                         {/* Edit Form */}
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <div>
                                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                                     Title
@@ -561,7 +565,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                             </div>
                                                         </div>
 
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                             <div>
                                                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                                                     Estimated Time
@@ -570,7 +574,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                                     type="text"
                                                                     value={editingRec.estimated_time}
                                                                     onChange={(e) => updateEditingField('estimated_time', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                                     placeholder="e.g., 2-3 hours"
                                                                 />
                                                             </div>
@@ -583,7 +587,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                                     type="text"
                                                                     value={editingRec.cost_estimate}
                                                                     onChange={(e) => updateEditingField('cost_estimate', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                                     placeholder="e.g., $100-500 or Free"
                                                                 />
                                                             </div>
@@ -602,14 +606,14 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                             />
                                                         </div>
 
-                                                        <div className="flex space-x-3 pt-2">
-                                                            <Button onClick={saveEdit}>
+                                                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                                            <Button onClick={saveEdit} className="w-full sm:w-auto">
                                                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                                 </svg>
                                                                 Save Changes
                                                             </Button>
-                                                            <Button variant="outline" onClick={cancelEdit}>
+                                                            <Button variant="outline" onClick={cancelEdit} className="w-full sm:w-auto">
                                                                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                                                                 </svg>
@@ -655,24 +659,24 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                             (recommendation.cost_estimate && recommendation.cost_estimate !== 'Not specified') ||
                                                             (recommendation.expected_outcome && recommendation.expected_outcome !== 'Improved system functionality')
                                                         ) && (
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/50 p-3 sm:p-4 rounded-lg">
                                                                 {recommendation.estimated_time && recommendation.estimated_time !== 'Not specified' && (
                                                                     <div>
-                                                                        <h6 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Time Estimate</h6>
-                                                                        <p className="text-sm text-gray-900 dark:text-white">{recommendation.estimated_time}</p>
+                                                                        <h6 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Time Estimate</h6>
+                                                                        <p className="text-sm text-gray-900 dark:text-white break-words">{recommendation.estimated_time}</p>
                                                                     </div>
                                                                 )}
                                                                 {recommendation.cost_estimate && recommendation.cost_estimate !== 'Not specified' && (
                                                                     <div>
-                                                                        <h6 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Cost Estimate</h6>
-                                                                        <p className="text-sm text-gray-900 dark:text-white">{recommendation.cost_estimate}</p>
+                                                                        <h6 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Cost Estimate</h6>
+                                                                        <p className="text-sm text-gray-900 dark:text-white break-words">{recommendation.cost_estimate}</p>
                                                                     </div>
                                                                 )}
                                                                 {recommendation.expected_outcome && recommendation.expected_outcome !== 'Improved system functionality' && (
-                                                                    <div className="md:col-span-2">
-                                                                        <h6 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Expected Outcome</h6>
+                                                                    <div className="sm:col-span-2">
+                                                                        <h6 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Expected Outcome</h6>
                                                                         <div
-                                                                            className="text-sm text-gray-900 dark:text-white"
+                                                                            className="text-sm text-gray-900 dark:text-white break-words"
                                                                             dangerouslySetInnerHTML={{ __html: recommendation.expected_outcome }}
                                                                         />
                                                                     </div>
@@ -728,10 +732,11 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                 </div>
             </Card>
 
-            <div className="flex justify-between">
+            <div className="flex flex-col sm:flex-row justify-between gap-3 sm:gap-0">
                 <Button
                     variant="outline"
                     onClick={onBack}
+                    className="w-full sm:w-auto"
                 >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
@@ -739,11 +744,12 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                     Back to Findings
                 </Button>
 
-                <div className="flex space-x-3">
+                <div className="flex flex-col sm:flex-row gap-3 sm:space-x-3">
                     <Button
                         variant="outline"
                         onClick={handleSave}
                         loading={saving}
+                        className="w-full sm:w-auto"
                     >
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12" />
@@ -754,6 +760,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                     <Button
                         onClick={handleNext}
                         disabled={recommendations.length === 0}
+                        className="w-full sm:w-auto"
                     >
                         Next: Review Report
                         <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
