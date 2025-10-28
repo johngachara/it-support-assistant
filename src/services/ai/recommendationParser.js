@@ -13,22 +13,14 @@ class RecommendationsParser {
                 const jsonContent = match[1].trim();
                 const recommendation = JSON.parse(jsonContent);
 
-                // Validate required fields (only title and steps are required)
+                // Validate required fields (only title and description are required)
                 if (this.validateRecommendation(recommendation)) {
-                    // Apply defaults for missing fields
+                    // Apply normalization
                     const normalizedRec = this.normalizeRecommendation(recommendation);
 
-                    // Process markdown content for text fields
+                    // Process markdown content for description
                     if (normalizedRec.description) {
                         normalizedRec.description = marked.parse(normalizedRec.description);
-                    }
-                    if (normalizedRec.steps && Array.isArray(normalizedRec.steps)) {
-                        normalizedRec.steps = normalizedRec.steps.map(step =>
-                            typeof step === 'string' ? marked.parseInline(step) : step
-                        );
-                    }
-                    if (normalizedRec.expected_outcome) {
-                        normalizedRec.expected_outcome = marked.parseInline(normalizedRec.expected_outcome);
                     }
 
                     // Add unique ID
@@ -52,51 +44,29 @@ class RecommendationsParser {
     }
 
      validateRecommendation(rec) {
-        // Only title and steps are required
+        // Only title and description are required
         return !!(
             rec.title &&
             typeof rec.title === 'string' &&
             rec.title.trim().length > 0 &&
-            rec.steps &&
-            Array.isArray(rec.steps) &&
-            rec.steps.length > 0
+            rec.description &&
+            typeof rec.description === 'string' &&
+            rec.description.trim().length > 0
         );
     }
 
     normalizeRecommendation(rec) {
-        // Apply sensible defaults for missing optional fields
+        // Return only title and description
         return {
             title: rec.title,
-            priority: rec.priority || 'Medium',
-            category: rec.category || 'General',
-            urgency: rec.urgency || 'This Week (1-7 days)',
-            description: rec.description || '',
-            steps: rec.steps || [],
-            prerequisites: rec.prerequisites || [],
-            estimated_time: rec.estimated_time || 'Not specified',
-            expected_outcome: rec.expected_outcome || 'Improved system functionality',
-            risks: rec.risks || [],
-            cost_estimate: rec.cost_estimate || 'Not specified',
-            follow_up: rec.follow_up || 'Monitor system performance',
-            alternative_solutions: rec.alternative_solutions || []
+            description: rec.description
         };
     }
 
       sortRecommendations(recommendations) {
-        const priorityOrder = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 };
-        const urgencyOrder = {
-            'Immediate (0-4 hours)': 4,
-            'Same Day (4-24 hours)': 3,
-            'This Week (1-7 days)': 2,
-            'This Month (1-30 days)': 1
-        };
-
-        return recommendations.sort((a, b) => {
-            const priorityDiff = (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0);
-            if (priorityDiff !== 0) return priorityDiff;
-
-            return (urgencyOrder[b.urgency] || 0) - (urgencyOrder[a.urgency] || 0);
-        });
+        // No sorting needed since we don't have priority/urgency anymore
+        // Just return recommendations in the order they were generated
+        return recommendations;
     }
 
       parseAsFallback(rawResponse) {
@@ -118,26 +88,11 @@ class RecommendationsParser {
                 currentRec = {
                     id: `fallback_${Date.now()}_${recommendations.length}`,
                     title: numberMatch[2],
-                    priority: 'Medium',
-                    category: 'General',
-                    urgency: 'This Week (1-7 days)',
-                    description: marked.parseInline(numberMatch[2]),
-                    steps: [],
-                    prerequisites: [],
-                    estimated_time: 'Not specified',
-                    expected_outcome: 'Improved system functionality',
-                    risks: [],
-                    cost_estimate: 'Not specified',
-                    follow_up: 'Monitor system performance',
-                    alternative_solutions: []
+                    description: marked.parseInline(numberMatch[2])
                 };
             } else if (currentRec && trimmed.length > 0 && !trimmed.startsWith('#')) {
-                // Add content to current recommendation
-                if (trimmed.startsWith('-') || trimmed.startsWith('*')) {
-                    currentRec.steps.push(marked.parseInline(trimmed.substring(1).trim()));
-                } else {
-                    currentRec.description += ' ' + marked.parseInline(trimmed);
-                }
+                // Add content to current recommendation description
+                currentRec.description += ' ' + marked.parseInline(trimmed);
             }
         });
 
@@ -148,18 +103,7 @@ class RecommendationsParser {
         return recommendations.length > 0 ? recommendations : [{
             id: 'default_rec',
             title: 'General IT Support Recommendation',
-            priority: 'Medium',
-            category: 'General',
-            urgency: 'This Week (1-7 days)',
-            description: marked.parse(rawResponse),
-            steps: ['Review the provided recommendations', 'Implement suggested solutions'],
-            prerequisites: [],
-            estimated_time: 'Varies',
-            expected_outcome: 'Improved system performance',
-            risks: [],
-            cost_estimate: 'Not specified',
-            follow_up: 'Monitor system performance',
-            alternative_solutions: []
+            description: marked.parse(rawResponse)
         }];
     }
 }

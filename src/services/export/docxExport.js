@@ -376,166 +376,26 @@ export class DOCXExportService {
                     );
                 }
             } else if (typeof item === 'object') {
-                // Complex object with title, description, steps, etc.
+                // Object with title and description
+                const cleanTitle = item.title ? this.stripHtml(item.title) : '';
+                const cleanDesc = item.description ? this.stripHtml(item.description) : '';
 
-                // Title
-                if (item.title) {
-                    const cleanTitle = this.stripHtml(item.title);
-                    paragraphs.push(
-                        new Paragraph({
-                            children: [
-                                new TextRun({
-                                    text: cleanTitle,
-                                    bold: true,
-                                    size: 24 // 12pt
-                                })
-                            ],
-                            bullet: {
-                                level: 0
-                            },
-                            spacing: { after: 100 }
-                        })
-                    );
-                }
+                // Combine title and description in one paragraph
+                const text = cleanTitle && cleanDesc
+                    ? `${cleanTitle}: ${cleanDesc}`
+                    : cleanTitle || cleanDesc || 'No recommendation text';
 
-                // Description
-                if (item.description) {
-                    const cleanDesc = this.stripHtml(item.description);
-                    if (cleanDesc) {
-                        paragraphs.push(
-                            new Paragraph({
-                                children: [
-                                    new TextRun({
-                                        text: cleanDesc,
-                                        size: 22 // 11pt
-                                    })
-                                ],
-                                spacing: { after: 100 },
-                                indent: { left: 720 }
-                            })
-                        );
-                    }
-                }
-
-                // Steps
-                if (item.steps && item.steps.length > 0) {
-                    paragraphs.push(
-                        new Paragraph({
-                            children: [
-                                new TextRun({
-                                    text: 'Steps:',
-                                    italic: true,
-                                    size: 22 // 11pt
-                                })
-                            ],
-                            spacing: { after: 50 },
-                            indent: { left: 720 }
-                        })
-                    );
-
-                    item.steps.forEach((step, i) => {
-                        const cleanStep = this.stripHtml(step);
-                        if (cleanStep) {
-                            paragraphs.push(
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: cleanStep,
-                                            size: 22 // 11pt
-                                        })
-                                    ],
-                                    numbering: {
-                                        reference: 'number-styles',
-                                        level: 0
-                                    },
-                                    spacing: { after: 50 },
-                                    indent: { left: 1080 }
-                                })
-                            );
-                        }
-                    });
-                }
-
-                // Risks
-                if (item.risks && item.risks.length > 0) {
-                    paragraphs.push(
-                        new Paragraph({
-                            children: [
-                                new TextRun({
-                                    text: 'Risks:',
-                                    italic: true,
-                                    color: 'DC2626',
-                                    size: 22 // 11pt
-                                })
-                            ],
-                            spacing: { after: 50 },
-                            indent: { left: 720 }
-                        })
-                    );
-
-                    item.risks.forEach((risk, i) => {
-                        const cleanRisk = this.stripHtml(risk);
-                        if (cleanRisk) {
-                            paragraphs.push(
-                                new Paragraph({
-                                    children: [
-                                        new TextRun({
-                                            text: cleanRisk,
-                                            color: 'DC2626',
-                                            size: 22 // 11pt
-                                        })
-                                    ],
-                                    bullet: {
-                                        level: 1
-                                    },
-                                    spacing: { after: 50 },
-                                    indent: { left: 1080 }
-                                })
-                            );
-                        }
-                    });
-                }
-
-                // Metadata - Only show if not default values
-                const hasNonDefaultMetadata =
-                    (item.priority && item.priority !== 'Medium') ||
-                    (item.urgency && item.urgency !== 'This Week (1-7 days)') ||
-                    (item.category && item.category !== 'General');
-
-                if (hasNonDefaultMetadata) {
-                    const metadataParts = [];
-                    if (item.priority && item.priority !== 'Medium') {
-                        metadataParts.push(`Priority: ${item.priority}`);
-                    }
-                    if (item.urgency && item.urgency !== 'This Week (1-7 days)') {
-                        metadataParts.push(`Urgency: ${item.urgency}`);
-                    }
-                    if (item.category && item.category !== 'General') {
-                        metadataParts.push(`Category: ${item.category}`);
-                    }
-
-                    if (metadataParts.length > 0) {
-                        const metadata = metadataParts.join(' · ');
-                        paragraphs.push(
-                            new Paragraph({
-                                children: [
-                                    new TextRun({
-                                        text: metadata,
-                                        size: 20, // 10pt
-                                        color: '6B7280'
-                                    })
-                                ],
-                                spacing: { after: 200 },
-                                indent: { left: 720 }
-                            })
-                        );
-                    }
-                }
-
-                // Add spacing paragraph after each recommendation
                 paragraphs.push(
                     new Paragraph({
-                        text: '',
+                        children: [
+                            new TextRun({
+                                text: text,
+                                size: 22 // 11pt
+                            })
+                        ],
+                        bullet: {
+                            level: 0
+                        },
                         spacing: { after: 200 }
                     })
                 );

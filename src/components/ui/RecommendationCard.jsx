@@ -26,37 +26,6 @@ const RecommendationCard = ({ rec, index }) => {
                         dangerouslySetInnerHTML={{ __html: rec.description }}
                     />
                 )}
-
-                {/* Steps */}
-                {rec.steps && rec.steps.length > 0 && (
-                    <ol className="list-decimal ml-4 sm:ml-5 text-xs sm:text-sm space-y-1">
-                        {rec.steps.map((step, i) => (
-                            <li
-                                key={i}
-                                className="text-gray-700 dark:text-gray-300 break-words pl-1"
-                                dangerouslySetInnerHTML={{ __html: step }}
-                            />
-                        ))}
-                    </ol>
-                )}
-
-                {/* Risks */}
-                {rec.risks && rec.risks.length > 0 && (
-                    <ul className="list-disc ml-4 sm:ml-5 text-xs sm:text-sm text-red-500 dark:text-red-400 space-y-1">
-                        {rec.risks.map((risk, i) => (
-                            <li key={i} className="break-words pl-1">{risk}</li>
-                        ))}
-                    </ul>
-                )}
-
-                {/* Metadata */}
-                <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-2 gap-y-1">
-                    <span className="inline-block">Priority: {rec.priority || ''}</span>
-                    <span className="hidden sm:inline">·</span>
-                    <span className="inline-block">Urgency: {rec.urgency || ''}</span>
-                    <span className="hidden sm:inline">·</span>
-                    <span className="inline-block">Category: {rec.category || ''}</span>
-                </div>
             </div>
         </div>
     );

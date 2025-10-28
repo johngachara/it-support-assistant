@@ -42,11 +42,11 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                 setMetadata(result.metadata);
                 setSearchProgress('');
 
-                // Auto-expand critical and high priority items
-                const criticalHighIndices = result.structured
-                    .map((rec, index) => rec.priority === 'Critical' || rec.priority === 'High' ? index : null)
+                // Auto-expand first few items
+                const firstFewIndices = result.structured
+                    .map((rec, index) => index < 3 ? index : null)
                     .filter(index => index !== null);
-                setExpandedCards(new Set(criticalHighIndices));
+                setExpandedCards(new Set(firstFewIndices));
             } else {
                 throw new Error('No recommendations were generated');
             }
@@ -70,18 +70,7 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
         const newRec = {
             id: `custom_${Date.now()}`,
             title: '',
-            priority: 'Medium',
-            category: 'Custom',
-            urgency: 'This Week (1-7 days)',
-            description: '',
-            steps: [''],
-            prerequisites: [],
-            estimated_time: '',
-            expected_outcome: '',
-            risks: [],
-            cost_estimate: '',
-            follow_up: '',
-            alternative_solutions: []
+            description: ''
         };
 
         const newRecommendations = [...recommendations, newRec];
@@ -101,35 +90,13 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
         setEditingRec(prev => ({ ...prev, [field]: value }));
     };
 
-    const addStep = () => {
-        setEditingRec(prev => ({
-            ...prev,
-            steps: [...prev.steps, '']
-        }));
-    };
-
-    const updateStep = (stepIndex, value) => {
-        setEditingRec(prev => ({
-            ...prev,
-            steps: prev.steps.map((step, i) => i === stepIndex ? value : step)
-        }));
-    };
-
-    const removeStep = (stepIndex) => {
-        setEditingRec(prev => ({
-            ...prev,
-            steps: prev.steps.filter((_, i) => i !== stepIndex)
-        }));
-    };
-
     const saveEdit = () => {
-        if (!editingRec.title.trim() || editingRec.steps.filter(s => s.trim()).length === 0) {
-            setError('Title and at least one step are required');
+        if (!editingRec.title.trim() || !editingRec.description.trim()) {
+            setError('Title and description are required');
             return;
         }
 
-        const validSteps = editingRec.steps.filter(step => step.trim());
-        const updatedRec = { ...editingRec, steps: validSteps };
+        const updatedRec = { ...editingRec };
 
         const updatedRecommendations = recommendations.map((rec, i) =>
             i === editingIndex ? updatedRec : rec
@@ -179,46 +146,6 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
             }
             return newSet;
         });
-    };
-
-    const getPriorityColor = (priority) => {
-        switch (priority) {
-            case 'Critical': return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200';
-            case 'High': return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200';
-            case 'Medium': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200';
-            case 'Low': return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200';
-            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-200';
-        }
-    };
-
-    const getCategoryIcon = (category) => {
-        const iconClass = "w-5 h-5";
-        switch (category) {
-            case 'Immediate Action':
-                return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>;
-            case 'Hardware':
-                return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                </svg>;
-            case 'Software':
-                return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                </svg>;
-            case 'Security':
-                return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.031 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>;
-            case 'Performance':
-                return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>;
-            default:
-                return <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>;
-        }
     };
 
     const handleNext = () => {
@@ -287,9 +214,6 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                 <div className="flex flex-wrap items-center gap-2 sm:gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                                     <span>Total: {metadata.total_recommendations}</span>
                                     {metadata.search_enhanced && <span className="flex items-center"><span className="w-2 h-2 bg-green-400 rounded-full mr-1"></span>Web-enhanced</span>}
-                                    {Object.entries(metadata.priority_breakdown).map(([priority, count]) =>
-                                        count > 0 && <span key={priority}>{priority}: {count}</span>
-                                    )}
                                 </div>
                             )}
                         </div>
@@ -377,28 +301,14 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                         <div className="p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50">
                                             <div className="flex items-start sm:items-center justify-between gap-3">
                                                 <div className="flex items-start sm:items-center space-x-3 flex-1 min-w-0">
-                                                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full mt-1 sm:mt-0">
-                                                        {getCategoryIcon(recommendation.category)}
+                                                    <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 rounded-full mt-1 sm:mt-0 text-sm font-medium">
+                                                        {index + 1}
                                                     </div>
 
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex items-start sm:items-center space-x-2 mb-1">
-                                                            <h4 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white break-words">
-                                                                {recommendation.title || `Recommendation ${index + 1}`}
-                                                            </h4>
-                                                        </div>
-                                                        <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-                                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(recommendation.priority)}`}>
-                                                                {recommendation.priority}
-                                                            </span>
-                                                            <span className="text-gray-500 dark:text-gray-400 hidden sm:inline">
-                                                                {recommendation.category}
-                                                            </span>
-                                                            <span className="text-gray-500 dark:text-gray-400 hidden sm:inline">•</span>
-                                                            <span className="text-gray-500 dark:text-gray-400 text-xs break-words">
-                                                                {recommendation.urgency}
-                                                            </span>
-                                                        </div>
+                                                        <h4 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white break-words">
+                                                            {recommendation.title || `Recommendation ${index + 1}`}
+                                                        </h4>
                                                     </div>
                                                 </div>
 
@@ -446,71 +356,17 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                 {isEditing ? (
                                                     <div className="space-y-4">
                                                         {/* Edit Form */}
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                                    Title
-                                                                </label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={editingRec.title}
-                                                                    onChange={(e) => updateEditingField('title', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                    placeholder="Brief descriptive title"
-                                                                />
-                                                            </div>
-
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                                    Priority
-                                                                </label>
-                                                                <select
-                                                                    value={editingRec.priority}
-                                                                    onChange={(e) => updateEditingField('priority', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                >
-                                                                    <option value="Critical">Critical</option>
-                                                                    <option value="High">High</option>
-                                                                    <option value="Medium">Medium</option>
-                                                                    <option value="Low">Low</option>
-                                                                </select>
-                                                            </div>
-
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                                    Category
-                                                                </label>
-                                                                <select
-                                                                    value={editingRec.category}
-                                                                    onChange={(e) => updateEditingField('category', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                >
-                                                                    <option value="Immediate Action">Immediate Action</option>
-                                                                    <option value="Hardware">Hardware</option>
-                                                                    <option value="Software">Software</option>
-                                                                    <option value="Preventive">Preventive</option>
-                                                                    <option value="Security">Security</option>
-                                                                    <option value="Performance">Performance</option>
-                                                                    <option value="Cost Optimization">Cost Optimization</option>
-                                                                    <option value="Custom">Custom</option>
-                                                                </select>
-                                                            </div>
-
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                                    Urgency
-                                                                </label>
-                                                                <select
-                                                                    value={editingRec.urgency}
-                                                                    onChange={(e) => updateEditingField('urgency', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                >
-                                                                    <option value="Immediate (0-4 hours)">Immediate (0-4 hours)</option>
-                                                                    <option value="Same Day (4-24 hours)">Same Day (4-24 hours)</option>
-                                                                    <option value="This Week (1-7 days)">This Week (1-7 days)</option>
-                                                                    <option value="This Month (1-30 days)">This Month (1-30 days)</option>
-                                                                </select>
-                                                            </div>
+                                                        <div>
+                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                                Title
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={editingRec.title}
+                                                                onChange={(e) => updateEditingField('title', e.target.value)}
+                                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                                placeholder="Brief descriptive title"
+                                                            />
                                                         </div>
 
                                                         <div>
@@ -520,89 +376,9 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                             <textarea
                                                                 value={editingRec.description}
                                                                 onChange={(e) => updateEditingField('description', e.target.value)}
-                                                                rows={3}
+                                                                rows={5}
                                                                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                                 placeholder="Detailed explanation of what needs to be done and why..."
-                                                            />
-                                                        </div>
-
-                                                        <div>
-                                                            <div className="flex items-center justify-between mb-2">
-                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                                    Steps
-                                                                </label>
-                                                                <Button size="sm" variant="outline" onClick={addStep}>
-                                                                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                                                    </svg>
-                                                                    Add Step
-                                                                </Button>
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                {editingRec.steps.map((step, stepIndex) => (
-                                                                    <div key={stepIndex} className="flex items-start space-x-2">
-                                                                        <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-medium rounded-full flex items-center justify-center mt-1">
-                                                                            {stepIndex + 1}
-                                                                        </span>
-                                                                        <textarea
-                                                                            value={step}
-                                                                            onChange={(e) => updateStep(stepIndex, e.target.value)}
-                                                                            rows={2}
-                                                                            className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                            placeholder={`Step ${stepIndex + 1}...`}
-                                                                        />
-                                                                        <button
-                                                                            onClick={() => removeStep(stepIndex)}
-                                                                            className="flex-shrink-0 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded"
-                                                                            title="Remove step"
-                                                                        >
-                                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                                                            </svg>
-                                                                        </button>
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                        </div>
-
-                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                                    Estimated Time
-                                                                </label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={editingRec.estimated_time}
-                                                                    onChange={(e) => updateEditingField('estimated_time', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                    placeholder="e.g., 2-3 hours"
-                                                                />
-                                                            </div>
-
-                                                            <div>
-                                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                                    Cost Estimate
-                                                                </label>
-                                                                <input
-                                                                    type="text"
-                                                                    value={editingRec.cost_estimate}
-                                                                    onChange={(e) => updateEditingField('cost_estimate', e.target.value)}
-                                                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm sm:text-base text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                    placeholder="e.g., $100-500 or Free"
-                                                                />
-                                                            </div>
-                                                        </div>
-
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                                                Expected Outcome
-                                                            </label>
-                                                            <textarea
-                                                                value={editingRec.expected_outcome}
-                                                                onChange={(e) => updateEditingField('expected_outcome', e.target.value)}
-                                                                rows={2}
-                                                                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-900 dark:text-white bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                                placeholder="What should happen after implementing this recommendation..."
                                                             />
                                                         </div>
 
@@ -623,83 +399,13 @@ const AIRecommendationsStep = ({ reportData, onNext, onBack, onSave }) => {
                                                     </div>
                                                 ) : (
                                                     <div className="space-y-4">
-                                                        {/* Description - Only show if not empty */}
+                                                        {/* Description */}
                                                         {recommendation.description && recommendation.description.trim() && (
                                                             <div>
                                                                 <div
-                                                                    className="prose dark:prose-invert max-w-none text-gray-900 dark:text-white"
+                                                                    className="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300 text-sm"
                                                                     dangerouslySetInnerHTML={{ __html: recommendation.description }}
                                                                 />
-                                                            </div>
-                                                        )}
-
-                                                        {/* Steps */}
-                                                        {recommendation.steps && recommendation.steps.length > 0 && (
-                                                            <div>
-                                                                <h5 className="text-sm font-medium text-gray-900 dark:text-white mb-2">Implementation Steps:</h5>
-                                                                <div className="space-y-2">
-                                                                    {recommendation.steps.map((step, stepIndex) => (
-                                                                        <div key={stepIndex} className="flex items-start space-x-3">
-                                                                            <span className="flex-shrink-0 w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 text-xs font-medium rounded-full flex items-center justify-center">
-                                                                                {stepIndex + 1}
-                                                                            </span>
-                                                                            <div
-                                                                                className="flex-1 text-gray-700 dark:text-gray-300"
-                                                                                dangerouslySetInnerHTML={{ __html: step }}
-                                                                            />
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        )}
-
-                                                        {/* Details Grid - Only show if values are not defaults */}
-                                                        {(
-                                                            (recommendation.estimated_time && recommendation.estimated_time !== 'Not specified') ||
-                                                            (recommendation.cost_estimate && recommendation.cost_estimate !== 'Not specified') ||
-                                                            (recommendation.expected_outcome && recommendation.expected_outcome !== 'Improved system functionality')
-                                                        ) && (
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50 dark:bg-gray-800/50 p-3 sm:p-4 rounded-lg">
-                                                                {recommendation.estimated_time && recommendation.estimated_time !== 'Not specified' && (
-                                                                    <div>
-                                                                        <h6 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Time Estimate</h6>
-                                                                        <p className="text-sm text-gray-900 dark:text-white break-words">{recommendation.estimated_time}</p>
-                                                                    </div>
-                                                                )}
-                                                                {recommendation.cost_estimate && recommendation.cost_estimate !== 'Not specified' && (
-                                                                    <div>
-                                                                        <h6 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Cost Estimate</h6>
-                                                                        <p className="text-sm text-gray-900 dark:text-white break-words">{recommendation.cost_estimate}</p>
-                                                                    </div>
-                                                                )}
-                                                                {recommendation.expected_outcome && recommendation.expected_outcome !== 'Improved system functionality' && (
-                                                                    <div className="sm:col-span-2">
-                                                                        <h6 className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Expected Outcome</h6>
-                                                                        <div
-                                                                            className="text-sm text-gray-900 dark:text-white break-words"
-                                                                            dangerouslySetInnerHTML={{ __html: recommendation.expected_outcome }}
-                                                                        />
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        )}
-
-                                                        {/* Warnings/Risks */}
-                                                        {recommendation.risks && recommendation.risks.length > 0 && (
-                                                            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                                                                <div className="flex">
-                                                                    <svg className="flex-shrink-0 w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                                                    </svg>
-                                                                    <div>
-                                                                        <h6 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-1">Risks & Considerations</h6>
-                                                                        <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
-                                                                            {recommendation.risks.map((risk, riskIndex) => (
-                                                                                <li key={riskIndex}>• {risk}</li>
-                                                                            ))}
-                                                                        </ul>
-                                                                    </div>
-                                                                </div>
                                                             </div>
                                                         )}
                                                     </div>
