@@ -7,9 +7,9 @@ import RecommendationCard from "../ui/RecommendationCard.jsx";
 
 const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
     const [showExportModal, setShowExportModal] = useState(false);
-    const [exportFormat, setExportFormat] = useState('docx');
+    const [exportFormat, setExportFormat] = useState('pdf');
     const [fileName, setFileName] = useState('');
-    const [preparedBy, setPreparedBy] = useState(reportData.preparedBy || 'IT Admin');
+    const [preparedBy, setPreparedBy] = useState(reportData.preparedBy || 'Alex Mukuria');
     const [reviewedBy, setReviewedBy] = useState(reportData.reviewedBy || '');
     const [exporting, setExporting] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -240,16 +240,16 @@ const ReportPreview = ({ reportData, onBack, onSubmit, onSave }) => {
                             File Format
                         </label>
                         <div className="space-y-2">
-                            {/*<label className="flex items-center">*/}
-                            {/*    <input*/}
-                            {/*        type="radio"*/}
-                            {/*        value="pdf"*/}
-                            {/*        checked={exportFormat === 'pdf'}*/}
-                            {/*        onChange={(e) => setExportFormat(e.target.value)}*/}
-                            {/*        className="mr-2"*/}
-                            {/*    />*/}
-                            {/*    PDF Document*/}
-                            {/*</label>*/}
+                            <label className="flex items-center">
+                                <input
+                                    type="radio"
+                                    value="pdf"
+                                    checked={exportFormat === 'pdf'}
+                                    onChange={(e) => setExportFormat(e.target.value)}
+                                    className="mr-2"
+                                />
+                                PDF Document
+                            </label>
                             <label className="flex items-center">
                                 <input
                                     type="radio"

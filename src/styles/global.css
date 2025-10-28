@@ -171,10 +171,22 @@ a {
 
 .card-hover {
     @apply hover:shadow-md hover:-translate-y-1 transition-all duration-200;
+    will-change: transform, box-shadow;
 }
 
 [data-theme="dark"] .card {
     @apply bg-gray-900 border-gray-700;
+}
+
+/* Performance optimizations for scrolling */
+.will-change-transform {
+    will-change: transform;
+}
+
+/* Touch optimization for mobile */
+.touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Modal Components */
@@ -207,10 +219,12 @@ a {
     @apply border-gray-700 border-t-blue-400;
 }
 
-/* Custom Scrollbars */
+/* Custom Scrollbars with smooth performance */
 * {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 transparent;
+    /* Improve scrolling performance */
+    -webkit-overflow-scrolling: touch;
 }
 
 *::-webkit-scrollbar {
@@ -226,7 +240,7 @@ a {
 *::-webkit-scrollbar-thumb {
     background-color: #cbd5e1;
     border-radius: 3px;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s ease;
 }
 
 *::-webkit-scrollbar-thumb:hover {
@@ -248,6 +262,15 @@ a {
 
 [data-theme="dark"] *::-webkit-scrollbar-thumb:hover {
     background-color: #6b7280;
+}
+
+/* Optimize scroll containers */
+.content-container {
+    /* Enable hardware acceleration for smooth scrolling */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
 }
 
 /* Typography */
@@ -575,5 +598,210 @@ a {
     }
     80%, 100% {
         text-shadow: .25em 0 0 currentColor, .5em 0 0 currentColor;
+    }
+}
+
+/* Chat Message Styles - Better handling of LLM responses */
+.prose {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+}
+
+/* Code blocks in chat messages */
+.prose pre {
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+    background-color: #1e293b !important;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 0.5rem 0;
+}
+
+[data-theme="dark"] .prose pre {
+    background-color: #0f172a !important;
+}
+
+.prose pre code {
+    background-color: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre;
+    word-wrap: normal;
+    word-break: normal;
+}
+
+/* Inline code */
+.prose code {
+    background-color: #f1f5f9;
+    color: #dc2626;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+[data-theme="dark"] .prose code {
+    background-color: #1e293b;
+    color: #f87171;
+}
+
+/* User messages should have inverted code styles */
+.prose-invert code {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #fef3c7 !important;
+}
+
+.prose-invert pre {
+    background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Tables in chat messages */
+.prose table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+    border-collapse: collapse;
+    margin: 0.5rem 0;
+}
+
+.prose thead {
+    background-color: #f1f5f9;
+}
+
+[data-theme="dark"] .prose thead {
+    background-color: #1e293b;
+}
+
+.prose th,
+.prose td {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    min-width: 100px;
+}
+
+[data-theme="dark"] .prose th,
+[data-theme="dark"] .prose td {
+    border-color: #334155;
+}
+
+/* Lists in chat messages */
+.prose ul,
+.prose ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.prose li {
+    margin: 0.25rem 0;
+}
+
+/* Headings in chat messages */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.prose h1 {
+    font-size: 1.5rem;
+}
+
+.prose h2 {
+    font-size: 1.25rem;
+}
+
+.prose h3 {
+    font-size: 1.125rem;
+}
+
+/* Paragraphs in chat messages */
+.prose p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
+
+/* Blockquotes in chat messages */
+.prose blockquote {
+    border-left: 4px solid #cbd5e1;
+    padding-left: 1rem;
+    margin: 0.5rem 0;
+    font-style: italic;
+    color: #64748b;
+}
+
+[data-theme="dark"] .prose blockquote {
+    border-left-color: #475569;
+    color: #94a3b8;
+}
+
+/* Links in chat messages */
+.prose a {
+    color: #3b82f6;
+    text-decoration: underline;
+    word-break: break-word;
+}
+
+.prose a:hover {
+    color: #2563eb;
+}
+
+[data-theme="dark"] .prose a {
+    color: #60a5fa;
+}
+
+[data-theme="dark"] .prose a:hover {
+    color: #93c5fd;
+}
+
+/* Horizontal rules in chat messages */
+.prose hr {
+    border-color: #e2e8f0;
+    margin: 1rem 0;
+}
+
+[data-theme="dark"] .prose hr {
+    border-color: #334155;
+}
+
+/* Strong and emphasis */
+.prose strong {
+    font-weight: 600;
+}
+
+.prose em {
+    font-style: italic;
+}
+
+/* Better mobile responsiveness for chat */
+@media (max-width: 640px) {
+    .prose {
+        font-size: 0.875rem;
+    }
+
+    .prose pre {
+        padding: 0.75rem;
+        font-size: 0.75rem;
+    }
+
+    .prose table {
+        font-size: 0.75rem;
+    }
+
+    .prose th,
+    .prose td {
+        padding: 0.375rem;
+        min-width: 80px;
     }
 }

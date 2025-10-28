@@ -23,8 +23,8 @@ const ChatMessage = ({ message, isUser, isTyping = false, onTypingComplete }) =>
         });
     };
     return (
-        <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
-            <div className={`flex max-w-[80%] ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end space-x-2`}>
+        <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 px-2 sm:px-0`}>
+            <div className={`flex max-w-[95%] sm:max-w-[85%] lg:max-w-[75%] ${isUser ? 'flex-row-reverse' : 'flex-row'} items-end gap-2`}>
                 {/* Avatar */}
                 <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
                     isUser
@@ -43,12 +43,12 @@ const ChatMessage = ({ message, isUser, isTyping = false, onTypingComplete }) =>
                 </div>
 
                 {/* Message */}
-                <div className={`relative px-4 py-3 rounded-2xl ${
+                <div className={`relative px-3 sm:px-4 py-2 sm:py-3 rounded-2xl min-w-0 flex-1 ${
                     isUser
                         ? 'bg-blue-600 text-white rounded-br-sm'
                         : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-sm'
                 }`}>
-                    <div className="text-sm leading-relaxed">
+                    <div className="text-sm leading-relaxed break-words overflow-hidden">
                         {isTyping && !isUser ? (
                             <TypeWriter
                                 text={message}
@@ -56,7 +56,16 @@ const ChatMessage = ({ message, isUser, isTyping = false, onTypingComplete }) =>
                                 onComplete={onTypingComplete}
                             />
                         ) : (
-                            <div className="prose dark:prose-invert max-w-none"
+                            <div className={`prose dark:prose-invert max-w-none prose-sm
+                                prose-p:my-2 prose-p:leading-relaxed
+                                prose-headings:mt-4 prose-headings:mb-2
+                                prose-ul:my-2 prose-ol:my-2
+                                prose-li:my-1
+                                prose-code:break-words prose-code:whitespace-pre-wrap
+                                prose-pre:overflow-x-auto prose-pre:max-w-full
+                                prose-table:overflow-x-auto prose-table:block
+                                ${isUser ? 'prose-invert' : ''}
+                            `}
                                 dangerouslySetInnerHTML={{
                                     __html: formatMessage(message)
                                 }}
@@ -68,7 +77,8 @@ const ChatMessage = ({ message, isUser, isTyping = false, onTypingComplete }) =>
                     {!isUser && !isTyping && (
                         <button
                             onClick={() => copyToClipboard(message)}
-                            className="absolute top-2 right-2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded opacity-0 group-hover:opacity-100 transition-all"
+                            aria-label="Copy message"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -77,8 +87,8 @@ const ChatMessage = ({ message, isUser, isTyping = false, onTypingComplete }) =>
                     )}
 
                     {showCopyFeedback && (
-                        <div className="absolute -top-8 right-0 bg-black text-white text-xs px-2 py-1 rounded">
-                            Copied!
+                        <div className="absolute -top-8 right-0 bg-green-600 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg">
+                            ✓ Copied!
                         </div>
                     )}
                 </div>

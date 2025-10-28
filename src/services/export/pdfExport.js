@@ -1,266 +1,438 @@
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+
+// Register fonts - vfs_fonts directly exports the font files
+if (pdfMake.vfs === undefined) {
+    pdfMake.vfs = pdfFonts;
+}
 
 export class PDFExportService {
+    /**
+     * Strip HTML tags and convert basic HTML entities to plain text
+     */
+    static stripHtml(html) {
+        if (!html || typeof html !== 'string') return '';
+
+        return html
+            // Convert common HTML entities
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            // Remove HTML tags
+            .replace(/<[^>]*>/g, '')
+            // Clean up extra whitespace
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
     static async exportToPDF(reportData, fileName = 'report') {
         try {
-            const doc = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
+            const docDefinition = {
+                content: [
+                    // Title
+                    {
+                        text: reportData.title || 'Laptop Technical Report --- Paul Kamau',
+                        style: 'header',
+                        alignment: 'center',
+                        color: '#2563eb'
+                    },
+                    {
+                        canvas: [
+                            {
+                                type: 'line',
+                                x1: 0,
+                                y1: 5,
+                                x2: 515,
+                                y2: 5,
+                                lineWidth: 1,
+                                lineColor: '#2563eb'
+                            }
+                        ],
+                        margin: [0, 5, 0, 15]
+                    },
 
-            const pageWidth = doc.internal.pageSize.getWidth();
-            const pageHeight = doc.internal.pageSize.getHeight();
-            const margin = 20;
-            let yPos = margin;
+                    // Machine Details Section
+                    {
+                        text: 'Machine Details',
+                        style: 'sectionHeader'
+                    },
+                    {
+                        table: {
+                            widths: ['*', '*', '*', '*', '*'],
+                            body: [
+                                [
+                                    { text: 'Make & Model', style: 'tableHeader' },
+                                    { text: 'Serial Number', style: 'tableHeader' },
+                                    { text: 'RAM', style: 'tableHeader' },
+                                    { text: 'Storage', style: 'tableHeader' },
+                                    { text: 'Processor', style: 'tableHeader' }
+                                ],
+                                [
+                                    reportData.machineDetails?.make && reportData.machineDetails?.model
+                                        ? `${reportData.machineDetails.make} ${reportData.machineDetails.model}`
+                                        : 'N/A',
+                                    reportData.machineDetails?.serialNumber || 'N/A',
+                                    reportData.machineDetails?.ram || 'N/A',
+                                    reportData.machineDetails?.storage || 'N/A',
+                                    reportData.machineDetails?.processor || 'N/A'
+                                ]
+                            ]
+                        },
+                        layout: {
+                            fillColor: function (rowIndex) {
+                                return rowIndex === 0 ? '#f1f5f9' : null;
+                            },
+                            hLineWidth: function () { return 0.5; },
+                            vLineWidth: function () { return 0.5; },
+                            hLineColor: function () { return '#e2e8f0'; },
+                            vLineColor: function () { return '#e2e8f0'; }
+                        },
+                        margin: [0, 0, 0, 15]
+                    },
 
-            // Title
-            doc.setFontSize(16);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(37, 99, 235);
-            const title = reportData.title || 'Laptop Technical Report --- Paul Kamau';
-            doc.text(title, pageWidth / 2, yPos, { align: 'center' });
+                    // User Complaint Section
+                    {
+                        text: 'User Complaint',
+                        style: 'sectionHeader'
+                    },
+                    ...this.createComplaintList(reportData.userComplaint),
 
-            // Line under title
-            yPos += 5;
-            doc.setDrawColor(37, 99, 235);
-            doc.setLineWidth(0.5);
-            doc.line(margin, yPos, pageWidth - margin, yPos);
-            yPos += 15;
+                    // Findings Section
+                    {
+                        text: 'Findings',
+                        style: 'sectionHeader',
+                        margin: [0, 15, 0, 10]
+                    },
+                    ...this.createBulletList(reportData.findings),
 
-            // Machine Details Section
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(0, 0, 0);
-            doc.text('Machine Details', margin, yPos);
-            yPos += 8;
+                    // Recommendations Section
+                    {
+                        text: 'Recommendations',
+                        style: 'sectionHeader',
+                        margin: [0, 15, 0, 10]
+                    },
+                    ...this.createRecommendationsList(reportData.recommendations),
 
-            // Machine Details Table
-            const machineData = [
-                [
-                    reportData.machineDetails?.make && reportData.machineDetails?.model
-                        ? `${reportData.machineDetails.make} ${reportData.machineDetails.model}`
-                        : 'N/A',
-                    reportData.machineDetails?.serialNumber || 'N/A',
-                    reportData.machineDetails?.ram || 'N/A',
-                    reportData.machineDetails?.storage || 'N/A',
-                    reportData.machineDetails?.processor || 'N/A'
-                ]
-            ];
-
-            autoTable(doc, {
-                startY: yPos,
-                head: [['Make & Model', 'Serial Number', 'RAM', 'Storage', 'Processor']],
-                body: machineData,
-                theme: 'grid',
+                    // Signatures Section
+                    {
+                        columns: [
+                            {
+                                width: '50%',
+                                stack: [
+                                    { text: 'Report Prepared By', style: 'signatureHeader', margin: [0, 30, 0, 5] },
+                                    { text: `Name: ${reportData.preparedBy || 'Alex Mukuria'}`, style: 'signatureText' },
+                                    { text: 'Date: _________________________', style: 'signatureText', margin: [0, 5, 0, 5] },
+                                    { text: 'Sign: _________________________', style: 'signatureText' }
+                                ]
+                            },
+                            {
+                                width: '50%',
+                                stack: [
+                                    { text: 'Reviewed By', style: 'signatureHeader', margin: [0, 30, 0, 5] },
+                                    { text: `Name: ${reportData.reviewedBy || 'Kelvin Mwantari'}`, style: 'signatureText' },
+                                    { text: 'Date: _________________________', style: 'signatureText', margin: [0, 5, 0, 5] },
+                                    { text: 'Sign: _________________________', style: 'signatureText' }
+                                ]
+                            }
+                        ]
+                    }
+                ],
                 styles: {
-                    fontSize: 9,
-                    cellPadding: 4,
-                    overflow: 'linebreak',
-                    valign: 'middle'
+                    header: {
+                        fontSize: 16,
+                        bold: true,
+                        margin: [0, 0, 0, 10]
+                    },
+                    sectionHeader: {
+                        fontSize: 12,
+                        bold: true,
+                        margin: [0, 0, 0, 8]
+                    },
+                    tableHeader: {
+                        bold: true,
+                        fontSize: 10,
+                        alignment: 'center'
+                    },
+                    normal: {
+                        fontSize: 10
+                    },
+                    bulletText: {
+                        fontSize: 10,
+                        margin: [0, 2, 0, 2]
+                    },
+                    recommendationTitle: {
+                        fontSize: 11,
+                        bold: true,
+                        margin: [0, 2, 0, 2]
+                    },
+                    recommendationDescription: {
+                        fontSize: 10,
+                        margin: [15, 2, 0, 2]
+                    },
+                    subSection: {
+                        fontSize: 10,
+                        italics: true,
+                        margin: [15, 5, 0, 2]
+                    },
+                    stepText: {
+                        fontSize: 10,
+                        margin: [20, 2, 0, 2]
+                    },
+                    riskText: {
+                        fontSize: 10,
+                        color: '#dc2626',
+                        margin: [20, 2, 0, 2]
+                    },
+                    metadata: {
+                        fontSize: 8,
+                        color: '#6b7280',
+                        margin: [15, 3, 0, 5]
+                    },
+                    signatureHeader: {
+                        fontSize: 11,
+                        bold: true
+                    },
+                    signatureText: {
+                        fontSize: 10,
+                        margin: [0, 2, 0, 2]
+                    }
                 },
-                headStyles: {
-                    fillColor: [241, 245, 249],
-                    textColor: [0, 0, 0],
-                    fontStyle: 'bold',
-                    halign: 'center'
+                defaultStyle: {
+                    fontSize: 10,
+                    font: 'Roboto'
                 },
-                columnStyles: {
-                    0: { cellWidth: 35 },
-                    1: { cellWidth: 30 },
-                    2: { cellWidth: 25 },
-                    3: { cellWidth: 25 },
-                    4: { cellWidth: 55 }
-                },
-                margin: { left: margin, right: margin }
+                pageMargins: [40, 40, 40, 40]
+            };
+
+            // Create and download PDF
+            return new Promise((resolve, reject) => {
+                try {
+                    const pdfDocGenerator = pdfMake.createPdf(docDefinition);
+                    pdfDocGenerator.download(`${fileName}.pdf`);
+                    resolve(true);
+                } catch (error) {
+                    reject(error);
+                }
             });
-
-            yPos = doc.lastAutoTable.finalY + 15;
-
-            // User Complaint Section
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('User Complaint', margin, yPos);
-            yPos += 8;
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            const complaint = reportData.userComplaint || 'No complaint specified';
-
-            // Handle complaint as array or string
-            const complaints = Array.isArray(complaint) ? complaint : [complaint];
-            complaints.forEach((item) => {
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    yPos = margin;
-                }
-
-                const bulletPoint = `--`;
-                const complaintText = typeof item === 'string' ? item : item.text || JSON.stringify(item);
-                const complaintLines = doc.splitTextToSize(complaintText, pageWidth - 2 * margin - 10);
-
-                doc.text(bulletPoint, margin + 5, yPos);
-                doc.text(complaintLines, margin + 10, yPos);
-                yPos += complaintLines.length * 6 + 3;
-            });
-
-            yPos += 10;
-
-            // Findings Section
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Findings', margin, yPos);
-            yPos += 8;
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            const findings = reportData.findings || [];
-            findings.forEach((finding, index) => {
-                // Check if we need a new page
-                if (yPos > pageHeight - 40) {
-                    doc.addPage();
-                    yPos = margin;
-                }
-
-                const bulletPoint = `--`;
-                const findingText = typeof finding === 'string' ? finding : finding.text || JSON.stringify(finding);
-                const findingLines = doc.splitTextToSize(findingText, pageWidth - 2 * margin - 10);
-
-                doc.text(bulletPoint, margin + 5, yPos);
-                doc.text(findingLines, margin + 10, yPos);
-                yPos += findingLines.length * 6 + 3;
-            });
-
-            yPos += 10;
-
-            // Recommendations Section
-            doc.setFontSize(12);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Recommendations', margin, yPos);
-            yPos += 8;
-
-            doc.setFontSize(10);
-            const recommendations = reportData.recommendations || [];
-            recommendations.forEach((rec, index) => {
-                // Check if we need a new page
-                if (yPos > pageHeight - 60) {
-                    doc.addPage();
-                    yPos = margin;
-                }
-
-                const bulletPoint = `--`;
-                doc.text(bulletPoint, margin + 5, yPos);
-
-                // Title
-                if (rec.title) {
-                    doc.setFont('helvetica', 'bold');
-                    const titleLines = doc.splitTextToSize(rec.title, pageWidth - 2 * margin - 10);
-                    doc.text(titleLines, margin + 10, yPos);
-                    yPos += titleLines.length * 6 + 2;
-                }
-
-                // Description
-                if (rec.description) {
-                    doc.setFont('helvetica', 'normal');
-                    const cleanDesc = rec.description.replace(/<[^>]*>/g, ''); // Remove HTML tags
-                    const descLines = doc.splitTextToSize(cleanDesc, pageWidth - 2 * margin - 10);
-                    doc.text(descLines, margin + 10, yPos);
-                    yPos += descLines.length * 6 + 2;
-                }
-
-                // Steps
-                if (rec.steps && rec.steps.length > 0) {
-                    doc.setFont('helvetica', 'italic');
-                    doc.text('Steps:', margin + 10, yPos);
-                    yPos += 6;
-                    doc.setFont('helvetica', 'normal');
-                    rec.steps.forEach((step, i) => {
-                        const stepLines = doc.splitTextToSize(`${i + 1}. ${step}`, pageWidth - 2 * margin - 15);
-                        doc.text(stepLines, margin + 15, yPos);
-                        yPos += stepLines.length * 6 + 1;
-                    });
-                    yPos += 2;
-                }
-
-                // Risks
-                if (rec.risks && rec.risks.length > 0) {
-                    doc.setFont('helvetica', 'italic');
-                    doc.setTextColor(220, 38, 38); // Red color
-                    doc.text('Risks:', margin + 10, yPos);
-                    yPos += 6;
-                    doc.setFont('helvetica', 'normal');
-                    rec.risks.forEach((risk, i) => {
-                        const riskLines = doc.splitTextToSize(`• ${risk}`, pageWidth - 2 * margin - 15);
-                        doc.text(riskLines, margin + 15, yPos);
-                        yPos += riskLines.length * 6 + 1;
-                    });
-                    doc.setTextColor(0, 0, 0); // Reset to black
-                    yPos += 2;
-                }
-
-                // Metadata
-                if (rec.priority || rec.urgency || rec.category) {
-                    doc.setFontSize(8);
-                    doc.setTextColor(107, 114, 128); // Gray color
-                    const metadata = `Priority: ${rec.priority || 'N/A'} · Urgency: ${rec.urgency || 'N/A'} · Category: ${rec.category || 'N/A'}`;
-                    doc.text(metadata, margin + 10, yPos);
-                    doc.setFontSize(10);
-                    doc.setTextColor(0, 0, 0); // Reset to black
-                    yPos += 6;
-                }
-
-                yPos += 5; // Space between recommendations
-            });
-
-            yPos += 20;
-
-            // Check if signatures fit on current page
-            if (yPos > pageHeight - 80) {
-                doc.addPage();
-                yPos = margin;
-            }
-
-            // Signatures Section
-            const colWidth = (pageWidth - 3 * margin) / 2;
-
-            // Report Prepared By
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Report Prepared By', margin, yPos);
-            yPos += 8;
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Name: ${reportData.preparedBy || 'Alex Mukuria'}`, margin, yPos);
-            yPos += 10;
-            doc.text('Date: _________________________', margin, yPos);
-            yPos += 10;
-            doc.text('Sign: _________________________', margin, yPos);
-
-            // Reviewed By
-            const col2X = pageWidth / 2 + 10;
-            let yPos2 = yPos - 28;
-
-            doc.setFontSize(11);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Reviewed By', col2X, yPos2);
-            yPos2 += 8;
-
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Name: ${reportData.reviewedBy || 'Kelvin Mwantari'}`, col2X, yPos2);
-            yPos2 += 10;
-            doc.text('Date: _________________________', col2X, yPos2);
-            yPos2 += 10;
-            doc.text('Sign: _________________________', col2X, yPos2);
-
-            // Save the PDF
-            doc.save(`${fileName}.pdf`);
-            return true;
         } catch (error) {
             console.error('PDF export failed:', error);
             throw new Error('Failed to export PDF. Please try again.');
         }
+    }
+
+    static createComplaintList(complaint) {
+        if (!complaint) {
+            return [
+                {
+                    ul: ['No complaint specified'],
+                    style: 'bulletText',
+                    margin: [0, 0, 0, 10]
+                }
+            ];
+        }
+
+        const complaints = Array.isArray(complaint) ? complaint : [complaint];
+        const complaintItems = complaints
+            .map(item => {
+                const text = typeof item === 'string' ? item : item.text || JSON.stringify(item);
+                return this.stripHtml(text);
+            })
+            .filter(text => text);
+
+        if (complaintItems.length === 0) {
+            return [
+                {
+                    ul: ['No complaint specified'],
+                    style: 'bulletText',
+                    margin: [0, 0, 0, 10]
+                }
+            ];
+        }
+
+        return [
+            {
+                ul: complaintItems,
+                style: 'bulletText',
+                margin: [0, 0, 0, 10]
+            }
+        ];
+    }
+
+    static createBulletList(items) {
+        if (!items || items.length === 0) {
+            return [
+                {
+                    ul: ['No items specified'],
+                    style: 'bulletText',
+                    margin: [0, 0, 0, 10]
+                }
+            ];
+        }
+
+        const listItems = items
+            .map(item => {
+                const text = typeof item === 'string' ? item : item.text || JSON.stringify(item);
+                return this.stripHtml(text);
+            })
+            .filter(text => text);
+
+        if (listItems.length === 0) {
+            return [
+                {
+                    ul: ['No items specified'],
+                    style: 'bulletText',
+                    margin: [0, 0, 0, 10]
+                }
+            ];
+        }
+
+        return [
+            {
+                ul: listItems,
+                style: 'bulletText',
+                margin: [0, 0, 0, 10]
+            }
+        ];
+    }
+
+    static createRecommendationsList(recommendations) {
+        if (!recommendations || recommendations.length === 0) {
+            return [
+                {
+                    ul: ['No items specified'],
+                    style: 'bulletText',
+                    margin: [0, 0, 0, 10]
+                }
+            ];
+        }
+
+        const recItems = [];
+
+        recommendations.forEach((rec, index) => {
+            if (typeof rec === 'string') {
+                const cleanText = this.stripHtml(rec);
+                if (cleanText) {
+                    recItems.push({
+                        text: cleanText,
+                        style: 'bulletText',
+                        margin: [0, 2, 0, 5]
+                    });
+                }
+            } else if (typeof rec === 'object') {
+                const recStack = [];
+
+                // Title
+                if (rec.title) {
+                    const cleanTitle = this.stripHtml(rec.title);
+                    recStack.push({
+                        text: cleanTitle,
+                        style: 'recommendationTitle'
+                    });
+                }
+
+                // Description
+                if (rec.description) {
+                    const cleanDesc = this.stripHtml(rec.description);
+                    if (cleanDesc) {
+                        recStack.push({
+                            text: cleanDesc,
+                            style: 'recommendationDescription'
+                        });
+                    }
+                }
+
+                // Steps
+                if (rec.steps && rec.steps.length > 0) {
+                    recStack.push({
+                        text: 'Steps:',
+                        style: 'subSection'
+                    });
+
+                    const stepItems = rec.steps
+                        .map(step => this.stripHtml(typeof step === 'string' ? step : String(step)))
+                        .filter(step => step);
+
+                    if (stepItems.length > 0) {
+                        recStack.push({
+                            ol: stepItems,
+                            style: 'stepText'
+                        });
+                    }
+                }
+
+                // Risks
+                if (rec.risks && rec.risks.length > 0) {
+                    recStack.push({
+                        text: 'Risks:',
+                        style: 'subSection',
+                        color: '#dc2626'
+                    });
+
+                    const riskItems = rec.risks
+                        .map(risk => this.stripHtml(typeof risk === 'string' ? risk : String(risk)))
+                        .filter(risk => risk);
+
+                    if (riskItems.length > 0) {
+                        recStack.push({
+                            ul: riskItems,
+                            style: 'riskText'
+                        });
+                    }
+                }
+
+                // Metadata - Only show if not default values
+                const hasNonDefaultMetadata =
+                    (rec.priority && rec.priority !== 'Medium') ||
+                    (rec.urgency && rec.urgency !== 'This Week (1-7 days)') ||
+                    (rec.category && rec.category !== 'General');
+
+                if (hasNonDefaultMetadata) {
+                    const metadataParts = [];
+                    if (rec.priority && rec.priority !== 'Medium') {
+                        metadataParts.push(`Priority: ${rec.priority}`);
+                    }
+                    if (rec.urgency && rec.urgency !== 'This Week (1-7 days)') {
+                        metadataParts.push(`Urgency: ${rec.urgency}`);
+                    }
+                    if (rec.category && rec.category !== 'General') {
+                        metadataParts.push(`Category: ${rec.category}`);
+                    }
+
+                    if (metadataParts.length > 0) {
+                        recStack.push({
+                            text: metadataParts.join(' · '),
+                            style: 'metadata'
+                        });
+                    }
+                }
+
+                if (recStack.length > 0) {
+                    recItems.push({
+                        stack: recStack,
+                        margin: [0, 0, 0, 8]
+                    });
+                }
+            }
+        });
+
+        if (recItems.length === 0) {
+            return [
+                {
+                    ul: ['No items specified'],
+                    style: 'bulletText',
+                    margin: [0, 0, 0, 10]
+                }
+            ];
+        }
+
+        return [
+            {
+                ul: recItems,
+                margin: [0, 0, 0, 10]
+            }
+        ];
     }
 }
