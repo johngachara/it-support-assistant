@@ -1,12 +1,17 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
+import { authService } from '../../services/auth/authService';
 import { useState } from 'react';
 import { showToast } from '../../utils/toast';
 
 const Sidebar = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
-    const { user, signOut } = useAuth();
+    const { user } = useAuth();
     const [signingOut, setSigningOut] = useState(false);
+
+    // Get user role from user metadata
+    const userRole = user?.user_metadata?.role;
+
     const navigation = [
         {
             name: 'Dashboard',
@@ -56,6 +61,18 @@ const Sidebar = ({ isOpen, onClose }) => {
         }
     ];
 
+    // Admin navigation item
+    const adminNavigation = {
+        name: 'User Management',
+        href: '/admin/users',
+        icon: (
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        )
+    };
+
+    // Secondary navigation (System section)
     const secondaryNavigation = [
         {
             name: 'Settings',
@@ -68,7 +85,7 @@ const Sidebar = ({ isOpen, onClose }) => {
             )
         },
         {
-            name: 'Help & Support',
+            name: 'Help',
             href: '/help',
             icon: (
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +130,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Navigation */}
-                    <nav className="flex-1 px-4 py-6 space-y-2">
+                    <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
                         <div className="space-y-1">
                             {navigation.map((item) => (
                                 <NavLink
@@ -133,6 +150,31 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 </NavLink>
                             ))}
                         </div>
+
+                        {/* Admin Section */}
+                        {userRole === 'admin' && (
+                            <div className="pt-6">
+                                <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Administration
+                                </div>
+                                <div className="space-y-1 mt-2">
+                                    <NavLink
+                                        to={adminNavigation.href}
+                                        onClick={() => onClose()}
+                                        className={({ isActive }) =>
+                                            `flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                                isActive
+                                                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+                                                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'
+                                            }`
+                                        }
+                                    >
+                                        {adminNavigation.icon}
+                                        <span className="ml-3">{adminNavigation.name}</span>
+                                    </NavLink>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="pt-6">
                             <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -176,6 +218,11 @@ const Sidebar = ({ isOpen, onClose }) => {
                                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
                                     {user?.email}
                                 </p>
+                                {userRole === 'admin' && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                                        Admin
+                                    </span>
+                                )}
                             </div>
                         </div>
 
@@ -184,13 +231,14 @@ const Sidebar = ({ isOpen, onClose }) => {
                             onClick={async () => {
                                 setSigningOut(true);
                                 try {
-                                    await signOut();
-                                    showToast.success('Signed out successfully. See you next time!');
-                                    navigate('/login');
+                                    // Sign out from Supabase (this clears the session including MFA)
+                                    await authService.signOut();
+                                    showToast.success('Signed out successfully');
+                                    // Navigate to login and replace history to prevent back navigation
+                                    navigate('/login', { replace: true });
                                 } catch (error) {
                                     console.error('Sign out error:', error);
                                     showToast.error('Failed to sign out. Please try again.');
-                                } finally {
                                     setSigningOut(false);
                                 }
                             }}

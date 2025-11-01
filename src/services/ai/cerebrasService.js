@@ -28,7 +28,7 @@ class CerebrasService {
                     tools: tools.length > 0 ? tools : undefined,
                     tool_choice: tools.length > 0 ? toolChoice : undefined,
                     temperature: 0.7,
-                    max_tokens: 3000,
+                    max_tokens: 4000,
                     stream: false,
                     reasoning_effort : 'low'
                 }),

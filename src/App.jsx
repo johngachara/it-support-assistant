@@ -12,10 +12,11 @@ import ReportsList from './components/report/ReportsList.jsx';
 import ChatPage from './pages/ChatPage';
 import HelpPage from './pages/HelpPage';
 import Login from './pages/Login';
+import UserManagement from './components/admin/UserManagement';
 import './styles/global.css'
 import EditReportForm from "./components/forms/EditReportForm.jsx";
 import ViewReportModal from "./components/report/ViewReportModal.jsx";
-
+import MfaSettings from './components/auth/MfaSettings.jsx'
 
 function App() {
     return (
@@ -25,29 +26,31 @@ function App() {
                     <ErrorBoundary>
                         <ToasterProvider />
                         <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
-                        <Routes>
-                            {/* Public route */}
-                            <Route path="/login" element={<Login />} />
+                            <Routes>
+                                {/* Public route */}
+                                <Route path="/login" element={<Login />} />
 
-                            {/* Protected routes */}
-                            <Route path="/" element={
-                                <ProtectedRoute>
-                                    <Layout />
-                                </ProtectedRoute>
-                            }>
-                                <Route index element={<Dashboard />} />
-                                <Route path="create-report" element={<CreateReport />} />
-                                <Route path="reports" element={<ReportsList />} />
-                                <Route path="reports/:id/edit" element={<EditReportForm />} />
-                                <Route path="reports/:id" element={<ViewReportModal />} />
-                                <Route path="chat" element={<ChatPage />} />
-                                <Route path="chat/:view" element={<ChatPage />} />
-                                <Route path="chat/continue/:chatId" element={<ChatPage />} />
-                                <Route path="help" element={<HelpPage />} />
-                                {/* Redirect any unknown routes to dashboard */}
-                                <Route path="*" element={<Navigate to="/" replace />} />
-                            </Route>
-                        </Routes>
+                                {/* Protected routes */}
+                                <Route path="/" element={
+                                    <ProtectedRoute>
+                                        <Layout />
+                                    </ProtectedRoute>
+                                }>
+                                    <Route index element={<Dashboard />} />
+                                    <Route path="create-report" element={<CreateReport />} />
+                                    <Route path="reports" element={<ReportsList />} />
+                                    <Route path="reports/:id/edit" element={<EditReportForm />} />
+                                    <Route path="reports/:id" element={<ViewReportModal />} />
+                                    <Route path="chat" element={<ChatPage />} />
+                                    <Route path="chat/:view" element={<ChatPage />} />
+                                    <Route path="chat/continue/:chatId" element={<ChatPage />} />
+                                    <Route path="help" element={<HelpPage />} />
+                                    <Route path="admin/users" element={<UserManagement />} />
+                                    <Route path="settings" element={<MfaSettings />} />
+                                    {/* Redirect any unknown routes to dashboard */}
+                                    <Route path="*" element={<Navigate to="/" replace />} />
+                                </Route>
+                            </Routes>
                         </div>
                     </ErrorBoundary>
                 </Router>

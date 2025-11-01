@@ -24,7 +24,7 @@ const ChatHistoryList = () => {
             const { data, error } = await supabase
                 .from('chat_history')
                 .select('*')
-                .order('updated_at', {ascending : false})
+                .order('updated_at', { ascending: false })
                 .limit(50);
 
             if (error) {
@@ -37,6 +37,25 @@ const ChatHistoryList = () => {
             console.error('Error loading chat history:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const getDateCategory = (dateString) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffDays === 0) {
+            return 'Today';
+        } else if (diffDays === 1) {
+            return 'Yesterday';
+        } else if (diffDays < 7) {
+            return 'This Week';
+        } else if (diffDays < 30) {
+            return 'This Month';
+        } else {
+            return 'Older';
         }
     };
 
@@ -55,6 +74,23 @@ const ChatHistoryList = () => {
         } else {
             return date.toLocaleDateString();
         }
+    };
+
+    const groupChatsByDate = () => {
+        const groups = {
+            'Today': [],
+            'Yesterday': [],
+            'This Week': [],
+            'This Month': [],
+            'Older': []
+        };
+
+        chatHistory.forEach(chat => {
+            const category = getDateCategory(chat.updated_at || chat.created_at);
+            groups[category].push(chat);
+        });
+
+        return groups;
     };
 
     const truncateText = (text, maxLength = 100) => {
@@ -99,6 +135,9 @@ const ChatHistoryList = () => {
         );
     }
 
+    const groupedChats = groupChatsByDate();
+    const categoryOrder = ['Today', 'Yesterday', 'This Week', 'This Month', 'Older'];
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="mb-8">
@@ -110,45 +149,59 @@ const ChatHistoryList = () => {
                 </p>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                {chatHistory.map((chat) => (
-                    <button
-                        key={chat.id}
-                        onClick={() => navigate(`/chat/continue/${chat.id}`)}
-                        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-6 text-left border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 group"
-                    >
-                        <div className="flex items-start justify-between mb-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                </svg>
+            <div className="space-y-8">
+                {categoryOrder.map(category => {
+                    const chatsInCategory = groupedChats[category];
+                    if (chatsInCategory.length === 0) return null;
+
+                    return (
+                        <div key={category}>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                                {category}
+                            </h2>
+                            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                {chatsInCategory.map((chat) => (
+                                    <button
+                                        key={chat.id}
+                                        onClick={() => navigate(`/chat/continue/${chat.id}`)}
+                                        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-all duration-200 p-6 text-left border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 group"
+                                    >
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">
+                                                {formatDate(chat.updated_at || chat.created_at)}
+                                            </span>
+                                        </div>
+
+                                        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                            {chat.title || truncateText(chat.last_message || 'Untitled Chat', 80)}
+                                        </h3>
+
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
+                                            {truncateText(getPreviewText(chat), 120)}
+                                        </p>
+
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
+                                                <span>Continue conversation</span>
+                                                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                                                </svg>
+                                            </div>
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                {chat.conversation?.length || 0} messages
+                                            </span>
+                                        </div>
+                                    </button>
+                                ))}
                             </div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">
-                                {formatDate(chat.updated_at || chat.created_at)}
-                            </span>
                         </div>
-
-                        <h3 className="text-base font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                            {chat.title || truncateText(chat.last_message || 'Untitled Chat', 80)}
-                        </h3>
-
-                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 mb-4">
-                            {truncateText(getPreviewText(chat), 120)}
-                        </p>
-
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center text-blue-600 dark:text-blue-400 text-sm font-medium">
-                                <span>Continue conversation</span>
-                                <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                                </svg>
-                            </div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                                {chat.conversation?.length || 0} messages
-                            </span>
-                        </div>
-                    </button>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
